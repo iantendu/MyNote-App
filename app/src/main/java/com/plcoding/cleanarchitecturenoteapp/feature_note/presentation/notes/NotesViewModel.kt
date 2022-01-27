@@ -1,12 +1,76 @@
 package com.plcoding.cleanarchitecturenoteapp.feature_note.presentation.notes
 
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.plcoding.cleanarchitecturenoteapp.feature_note.domain.model.Note
 import com.plcoding.cleanarchitecturenoteapp.feature_note.domain.use_case.NoteUseCases
+import com.plcoding.cleanarchitecturenoteapp.feature_note.domain.util.NoteOrder
+import com.plcoding.cleanarchitecturenoteapp.feature_note.domain.util.OrderType
 import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-@AndroidEntryPoint
+@HiltViewModel
 class NotesViewModel @Inject constructor(
     val noteUseCases: NoteUseCases
-) {
+) : ViewModel(){
 
+    private val _state= mutableStateOf(NoteState())
+    val state:State<NoteState> = _state
+    private var getNotesJob: Job?=null
+
+    private var recentlyDeletedNote:Note?=null
+
+    init {
+        getNotes(NoteOrder.Date(OrderType.Descending))
+    }
+  fun onEvent(notesEvent: NotesEvent){
+      when(notesEvent){
+          is NotesEvent.Order->{
+              if (state.value.noteOrder::class==notesEvent.noteOrder::class &&
+                      state.value.noteOrder.orderType==notesEvent.noteOrder.orderType){
+                  return
+              }
+              getNotes(notesEvent.noteOrder)
+
+          }
+          is NotesEvent.DeleteNote->{
+              recentlyDeletedNote=notesEvent.note
+              viewModelScope.launch {
+                  noteUseCases.deleteNote(notesEvent.note)
+
+              }
+
+          }
+          is NotesEvent.RestoreNote->{
+              viewModelScope.launch {
+                noteUseCases.addNote(recentlyDeletedNote?:return@launch)
+                recentlyDeletedNote=null
+              }
+
+
+          }
+          is NotesEvent.ToggleOrderSection->{
+              _state.value=state.value.copy(
+                  isOrderSectionVisible = !state.value.isOrderSectionVisible
+              )
+          }
+      }
+  }
+
+    private fun getNotes(noteOrder: NoteOrder){
+        noteUseCases.getNotes(noteOrder)
+            .onEach { notes->
+                _state.value=state.value.copy(
+                    notes,
+                    noteOrder
+                )
+            }
+    }
 }
