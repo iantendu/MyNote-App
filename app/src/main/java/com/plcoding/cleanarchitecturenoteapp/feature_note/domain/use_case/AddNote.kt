@@ -8,11 +8,11 @@ class AddNote(
 ) {
 
     suspend operator fun invoke(note: Note){
-        if(note.title.isBlank()){
-        Note.InvalidNoteException("The title cant empty")
-        }
-        if(note.content.isBlank()){
-            Note.InvalidNoteException("The content cant be empty")
+      if (note.title.isBlank()) {
+          Note.InvalidNoteException("The note title can't be empty")
+      }
+        if (note.content.isBlank()){
+            Note.InvalidNoteException("The note content can't empty")
         }
         repository.insertNote(note)
     }

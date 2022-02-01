@@ -13,11 +13,11 @@ class NoteRepositoryImpl(
     }
 
     override suspend fun getNoteById(id: Int): Note? {
-        return noteDao.getNoteById(id)
+       return noteDao.getNoteById(id)
     }
 
     override suspend fun deleteNote(note: Note) {
-       return noteDao.deleteNote(note)
+        return noteDao.deleteNote(note)
     }
 
     override suspend fun insertNote(note: Note) {
