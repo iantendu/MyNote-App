@@ -8,12 +8,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.plcoding.cleanarchitecturenoteapp.feature_note.domain.model.Note
 import com.plcoding.cleanarchitecturenoteapp.feature_note.domain.use_case.NoteUseCases
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import java.lang.Exception
 import javax.inject.Inject
-
+@HiltViewModel
 class AddEditViewModel @Inject constructor(
     private val noteUseCases: NoteUseCases,
     savedStateHandle: SavedStateHandle
